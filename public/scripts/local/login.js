@@ -25,7 +25,8 @@ function login() {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             data: { token: id_token },
             success: (response) => {
-                alert(response);
+                // alert(response);
+                window.location.replace(response);
             },
             error: (xhr) => {
                 alert(xhr.responseText);
