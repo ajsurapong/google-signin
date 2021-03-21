@@ -8,6 +8,20 @@
 </head>
 <body>
     <button type="button" onclick="signOut()">Sign out</button>
-    <h1>Welcome</h1>
+    <h1>Welcome <%= user.username %> </h1>
+    <h2>
+        Role:
+        <% if (user.role == 1) { %>
+            admin
+        <% } else if(user.role == 2) { %>
+            staff
+        <% } else { %>
+            supervisor
+        <% } %>
+    </h2>
+
+    <script src="/scripts/jquery.min.js"></script>
+    <script src="/scripts/local/welcome.js"></script>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script> 
 </body>
 </html>

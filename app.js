@@ -3,6 +3,8 @@ const expresss = require('express');
 const path = require('path');
 const { OAuth2Client } = require('google-auth-library');
 const con = require('./config/db');
+const session = require('express-session');
+const MemoryStore = require('memorystore')(session);
 
 const app = expresss();
 app.set('view engine', 'ejs');
@@ -10,13 +12,34 @@ app.use(expresss.static(path.join(__dirname, 'public')));
 app.use(expresss.urlencoded({extended: true}));
 app.use(expresss.json());
 
+// =============== Session management =============
+app.use(session({
+    cookie: { maxAge: 24*60*60*1000, httpOnly: true },
+    store: new MemoryStore({
+        checkPeriod: 24*60*60*1000
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false
+}));
+
 // =============== Page routes =============
 app.get('/', (req, res) => {
-    res.render('login');
+    if(req.session.user) {
+        res.redirect('/welcome');
+    }
+    else {
+        res.render('login');
+    }
 });
 
 app.get('/welcome', (req, res) => {
-    res.render('welcome');
+    if(req.session.user) {
+        res.render('welcome', {user: req.session.user});
+    }
+    else {
+        res.redirect('/');
+    }
 });
 
 // =============== Other routes =============
@@ -46,6 +69,8 @@ app.post('/verifyUser', (req, res) => {
                 if(result[0].role == 0) {
                     return res.status(400).send('Inactive memeber');
                 }
+                // save user data to session
+                req.session.user = {'username': payload.name, 'userID': result[0].userID, 'role': result[0].role};
                 res.send('/welcome');
             });          
         }).catch((err) => {
@@ -57,6 +82,16 @@ app.post('/verifyUser', (req, res) => {
         console.log('No token');
         res.status(400).send('No token');
     }
+});
+
+app.get('/logout', (req, res) => {
+    // destroy all sessions
+    req.session.destroy((err) => {
+        if(err) {
+            console.log(err);
+        }
+        res.redirect('/');
+    });
 });
 
 const PORT = process.env.PORT;
