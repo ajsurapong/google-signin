@@ -5,6 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const con = require('./config/db');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
+const checkUser = require('./checkUser');
 
 const app = expresss();
 app.set('view engine', 'ejs');
@@ -33,13 +34,8 @@ app.get('/', (req, res) => {
     }
 });
 
-app.get('/welcome', (req, res) => {
-    if(req.session.user) {
-        res.render('welcome', {user: req.session.user});
-    }
-    else {
-        res.redirect('/');
-    }
+app.get('/welcome', checkUser, (req, res) => {
+    res.render('welcome', {user: req.session.user});
 });
 
 // =============== Other routes =============
