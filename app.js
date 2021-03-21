@@ -2,6 +2,7 @@ require('dotenv').config();
 const expresss = require('express');
 const path = require('path');
 const { OAuth2Client } = require('google-auth-library');
+const con = require('./config/db');
 
 const app = expresss();
 app.set('view engine', 'ejs');
@@ -31,8 +32,22 @@ app.post('/verifyUser', (req, res) => {
             // console.log(payload);
             const email = payload.email;
             // TODO: verify user with DB
-            // console.log(email);
-            res.send('/welcome');
+            const sql = 'SELECT userID, role FROM user WHERE email=?';
+            con.query(sql, [email], (err, result) => {
+                if(err) {
+                    console.log(err);
+                    return res.status(500).send('Database error');
+                }
+                // check whether the user is our member
+                if(result.length != 1) {
+                    return res.status(400).send('Not a memeber');
+                }
+                // check whether the user is active
+                if(result[0].role == 0) {
+                    return res.status(400).send('Inactive memeber');
+                }
+                res.send('/welcome');
+            });          
         }).catch((err) => {
             console.log(err);
             res.status(400).send('Token is invalid');
