@@ -25,7 +25,7 @@ app.post('/verifyUser', (req, res) => {
             // console.log(payload);
             const email = payload.email;
             console.log(email);
-            res.end();
+            res.send('Success');
         }).catch((err) => {
             console.log(err);
             res.status(400).send('Token is invalid');
